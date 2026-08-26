@@ -1,0 +1,44 @@
+{
+  "name": "node-microservices",
+  "version": "1.0.0",
+  "description": "Production-ready Node.js microservices architecture",
+  "private": true,
+  "workspaces": [
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:gateway\" \"npm run dev:user\" \"npm run dev:product\" \"npm run dev:order\"",
+    "dev:gateway": "npm run dev --workspace=services/api-gateway",
+    "dev:user": "npm run dev --workspace=services/user-service",
+    "dev:product": "npm run dev --workspace=services/product-service",
+    "dev:order": "npm run dev --workspace=services/order-service",
+    "start": "npm run start:gateway & npm run start:user & npm run start:product & npm run start:order",
+    "start:gateway": "npm run start --workspace=services/api-gateway",
+    "start:user": "npm run start --workspace=services/user-service",
+    "start:product": "npm run start --workspace=services/product-service",
+    "start:order": "npm run start --workspace=services/order-service",
+    "test": "npm run test --workspaces",
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "eslint . --ext .js,.ts --fix",
+    "format": "prettier --write \"**/*.{js,ts,json,md}\"",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "concurrently": "^8.2.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

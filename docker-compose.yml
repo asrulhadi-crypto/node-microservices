@@ -1,0 +1,190 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - GATEWAY_PORT=3000
+      - GATEWAY_HOST=0.0.0.0
+      - USER_SERVICE_URL=http://user-service:3001
+      - PRODUCT_SERVICE_URL=http://product-service:3002
+      - ORDER_SERVICE_URL=http://order-service:3003
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+    networks:
+      - microservices-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # User Service
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - USER_SERVICE_PORT=3001
+      - USER_SERVICE_HOST=0.0.0.0
+      - USER_DB_HOST=user-db
+      - USER_DB_PORT=5432
+      - USER_DB_NAME=microservices_user
+      - USER_DB_USER=postgres
+      - USER_DB_PASSWORD=postgres
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      - JWT_EXPIRES_IN=24h
+    depends_on:
+      user-db:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Product Service
+  product-service:
+    build:
+      context: .
+      dockerfile: services/product-service/Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PRODUCT_SERVICE_PORT=3002
+      - PRODUCT_SERVICE_HOST=0.0.0.0
+      - PRODUCT_DB_HOST=product-db
+      - PRODUCT_DB_PORT=5432
+      - PRODUCT_DB_NAME=microservices_product
+      - PRODUCT_DB_USER=postgres
+      - PRODUCT_DB_PASSWORD=postgres
+    depends_on:
+      product-db:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Order Service
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - ORDER_SERVICE_PORT=3003
+      - ORDER_SERVICE_HOST=0.0.0.0
+      - ORDER_DB_HOST=order-db
+      - ORDER_DB_PORT=5432
+      - ORDER_DB_NAME=microservices_order
+      - ORDER_DB_USER=postgres
+      - ORDER_DB_PASSWORD=postgres
+      - PRODUCT_SERVICE_URL=http://product-service:3002
+    depends_on:
+      order-db:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # User Database
+  user-db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=microservices_user
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+      - ./services/user-service/database/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - microservices-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Product Database
+  product-db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=microservices_product
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - product-db-data:/var/lib/postgresql/data
+      - ./services/product-service/database/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - microservices-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Order Database
+  order-db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=microservices_order
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+      - ./services/order-service/database/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - microservices-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  microservices-net:
+    driver: bridge
+
+volumes:
+  user-db-data:
+  product-db-data:
+  order-db-data:

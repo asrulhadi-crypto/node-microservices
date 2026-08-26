@@ -1,0 +1,32 @@
+{
+  "name": "product-service",
+  "version": "1.0.0",
+  "description": "Product catalog microservice",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "test": "echo \"No tests yet\"",
+    "lint": "eslint src --ext .ts",
+    "migrate": "node-pg-migrate up",
+    "migrate:create": "node-pg-migrate create"
+  },
+  "dependencies": {
+    "@shared/utils": "*",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "morgan": "^1.10.0",
+    "pg": "^8.11.2",
+    "prom-client": "^15.1.0",
+    "node-pg-migrate": "^6.2.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.17",
+    "@types/morgan": "^1.9.4",
+    "@types/node": "^20.4.5",
+    "@types/pg": "^8.10.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.1.6"
+  }
+}

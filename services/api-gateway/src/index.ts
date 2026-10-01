@@ -10,7 +10,7 @@ import { authMiddleware } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 import { routes } from './routes';
 import { healthController } from './controllers/health';
-// import { metricsController } from './controllers/metrics';
+import { metricsController } from './controllers/metrics';
 
 const logger = createLogger('api-gateway');
 

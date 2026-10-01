@@ -24,9 +24,5 @@ export interface ServiceHealth {
   timestamp: string;
   service: string;
   version: string;
-  checks: {
-    database?: boolean;
-    cache?: boolean;
-    messageBroker?: boolean;
-  };
+  checks: Record<string, boolean>;
 }

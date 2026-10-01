@@ -10,7 +10,7 @@ import { authMiddleware } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 import { routes } from './routes';
 import { healthController } from './controllers/health';
-import { metricsController } from './controllers/metrics';
+// import { metricsController } from './controllers/metrics';
 
 const logger = createLogger('api-gateway');
 
@@ -59,8 +59,8 @@ app.use(morgan('combined', {
 
 // Request ID middleware
 app.use((req, res, next) => {
-  req.id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  res.setHeader('X-Request-ID', req.id);
+  req.params.id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  res.setHeader('X-Request-ID', req.params.id);
   next();
 });
 
@@ -99,7 +99,7 @@ process.on('SIGINT', () => {
 });
 
 // Start server
-app.listen(PORT, HOST, () => {
+app.listen(Number(PORT), HOST, () => {
   logger.info(`🚀 API Gateway running on http://${HOST}:${PORT}`);
   logger.info(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
 });

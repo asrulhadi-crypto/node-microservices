@@ -5,8 +5,7 @@ import promClient from 'prom-client';
 import { createLogger } from '@shared/utils';
 import { errorHandler } from './middleware/errorHandler';
 import { productRoutes } from './routes/product.routes';
-import { healthController } from './controllers/health';
-import { metricsController } from './controllers/metrics';
+import { healthController, metricsController } from './controllers/health.controller';
 import { pool } from './database';
 
 const logger = createLogger('product-service');
@@ -73,7 +72,7 @@ process.on('SIGINT', async () => {
 });
 
 // Start server
-app.listen(PORT, HOST, () => {
+app.listen(Number(PORT), HOST, () => {
   logger.info(`🚀 Product Service running on http://${HOST}:${PORT}`);
   logger.info(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
 });

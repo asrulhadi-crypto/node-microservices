@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Microservices Store</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/config.js"></script>
+</head>
+<body>
+  <header>
+    <h1>🛍️ Microservices Store</h1>
+    <nav>
+      <button data-tab="shop" class="active">Shop</button>
+      <button data-tab="cart">Cart (<span id="cart-count">0</span>)</button>
+      <button data-tab="orders">My Orders</button>
+      <button data-tab="account">Account</button>
+      <span id="status-dot" title="gateway status">●</span>
+    </nav>
+  </header>
+
+  <main>
+    <section id="tab-shop" class="tab active">
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="Search products…" />
+        <select id="category">
+          <option value="">All categories</option>
+        </select>
+        <button id="reload">Refresh</button>
+      </div>
+      <div id="products" class="grid"></div>
+      <div class="pager">
+        <button id="prev">‹ Prev</button>
+        <span id="page-info"></span>
+        <button id="next">Next ›</button>
+      </div>
+    </section>
+
+    <section id="tab-cart" class="tab">
+      <h2>Cart</h2>
+      <div id="cart-items"></div>
+      <h3>Shipping address</h3>
+      <form id="checkout-form" class="form">
+        <input name="street" placeholder="Street" required />
+        <input name="city" placeholder="City" required />
+        <input name="state" placeholder="State" required />
+        <input name="zipCode" placeholder="ZIP" required />
+        <input name="country" placeholder="Country" required />
+        <button type="submit">Place order</button>
+      </form>
+      <div id="checkout-msg"></div>
+    </section>
+
+    <section id="tab-orders" class="tab">
+      <h2>My Orders</h2>
+      <button id="load-orders">Load orders</button>
+      <div id="orders"></div>
+    </section>
+
+    <section id="tab-account" class="tab">
+      <h2>Account</h2>
+      <div id="profile"></div>
+      <div class="cols">
+        <form id="login-form" class="form">
+          <h3>Login</h3>
+          <input name="email" type="email" placeholder="Email" required />
+          <input name="password" type="password" placeholder="Password (min 8)" required />
+          <button type="submit">Login</button>
+        </form>
+        <form id="register-form" class="form">
+          <h3>Register</h3>
+          <input name="name" placeholder="Name" required />
+          <input name="email" type="email" placeholder="Email" required />
+          <input name="password" type="password" placeholder="Password (min 8)" required />
+          <button type="submit">Register</button>
+        </form>
+      </div>
+      <button id="logout">Logout</button>
+      <div id="auth-msg"></div>
+    </section>
+  </main>
+
+  <div id="product-modal" class="modal hidden">
+    <div class="modal-body">
+      <button id="modal-close">✕</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -121,6 +121,33 @@ services:
       retries: 3
       start_period: 40s
 
+  # Web Frontend (storefront UI)
+  web-frontend:
+    build:
+      context: .
+      dockerfile: services/web-frontend/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - FRONTEND_PORT=8080
+      - FRONTEND_HOST=0.0.0.0
+      # Browser-reachable gateway URL (override for k3s/Devtron ingress)
+      - GATEWAY_PUBLIC_URL=${GATEWAY_PUBLIC_URL:-http://localhost:3000}
+      - GATEWAY_INTERNAL_URL=http://api-gateway:3000
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   # User Database
   user-db:
     image: postgres:15-alpine

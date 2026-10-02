@@ -1,0 +1,76 @@
+# Web Frontend for k3s / Devtron.
+# Image: build & push services/web-frontend/Dockerfile, then set image below.
+# Browser -> frontend :8080, frontend browser-calls gateway via GATEWAY_PUBLIC_URL
+# (set to your gateway ingress URL, e.g. http://api-gateway.example.com).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-frontend
+  labels:
+    app: web-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-frontend
+  template:
+    metadata:
+      labels:
+        app: web-frontend
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: web-frontend
+          # TODO: replace with your registry image
+          image: web-frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: FRONTEND_PORT
+              value: '8080'
+            - name: FRONTEND_HOST
+              value: 0.0.0.0
+            # Browser-reachable gateway URL — override per environment.
+            - name: GATEWAY_PUBLIC_URL
+              value: 'http://api-gateway:3000'
+            - name: GATEWAY_INTERNAL_URL
+              value: 'http://api-gateway:3000'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-frontend
+  labels:
+    app: web-frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: web-frontend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

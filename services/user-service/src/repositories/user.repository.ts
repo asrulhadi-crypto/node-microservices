@@ -24,14 +24,27 @@ export interface UpdateUserDTO {
 }
 
 export const userRepository = {
+  // pg returns snake_case columns; map to the camelCase User interface.
+  mapRow(row: any): User {
+    return {
+      id: row.id,
+      email: row.email,
+      name: row.name,
+      passwordHash: row.password_hash,
+      role: row.role,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  },
+
   async findById(id: string): Promise<User | null> {
     const result = await query('SELECT * FROM users WHERE id = $1', [id]);
-    return result.rows[0] || null;
+    return result.rows[0] ? this.mapRow(result.rows[0]) : null;
   },
 
   async findByEmail(email: string): Promise<User | null> {
     const result = await query('SELECT * FROM users WHERE email = $1', [email]);
-    return result.rows[0] || null;
+    return result.rows[0] ? this.mapRow(result.rows[0]) : null;
   },
 
   async create(data: CreateUserDTO): Promise<User> {
@@ -41,7 +54,7 @@ export const userRepository = {
        RETURNING *`,
       [data.email, data.name, data.passwordHash, data.role || 'user']
     );
-    return result.rows[0];
+    return this.mapRow(result.rows[0]);
   },
 
   async update(id: string, data: UpdateUserDTO): Promise<User | null> {
@@ -73,7 +86,7 @@ export const userRepository = {
       `UPDATE users SET ${fields.join(', ')} WHERE id = $${paramCount} RETURNING *`,
       values
     );
-    return result.rows[0] || null;
+    return result.rows[0] ? this.mapRow(result.rows[0]) : null;
   },
 
   async delete(id: string): Promise<boolean> {

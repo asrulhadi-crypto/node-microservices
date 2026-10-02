@@ -6,8 +6,7 @@ import { createLogger } from '@shared/utils';
 import { errorHandler } from './middleware/errorHandler';
 import { authRoutes } from './routes/auth.routes';
 import { userRoutes } from './routes/user.routes';
-import { healthController } from './controllers/health';
-import { metricsController } from './controllers/metrics';
+import { healthController, metricsController } from './controllers/health.controller';
 import { pool } from './database';
 
 const logger = createLogger('user-service');
@@ -75,7 +74,7 @@ process.on('SIGINT', async () => {
 });
 
 // Start server
-app.listen(PORT, HOST, () => {
+app.listen(Number(PORT), HOST, () => {
   logger.info(`🚀 User Service running on http://${HOST}:${PORT}`);
   logger.info(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
 });

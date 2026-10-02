@@ -164,7 +164,7 @@ export const userService = {
         type: 'access',
       },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] }
     );
   },
 

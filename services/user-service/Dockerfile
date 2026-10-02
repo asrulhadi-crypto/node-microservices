@@ -3,25 +3,24 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
+# Copy workspace manifests first for better layer caching
 COPY package*.json ./
 COPY tsconfig.json ./
 COPY packages/shared/package.json ./packages/shared/
-
-RUN npm install --workspace=packages/shared
-
-# Copy shared package
-COPY packages/shared ./packages/shared
-
-# Copy service files
+COPY packages/shared/tsconfig.json ./packages/shared/
 COPY services/user-service/package*.json ./services/user-service/
 COPY services/user-service/tsconfig.json ./services/user-service/
-COPY services/user-service/src ./services/user-service/src
 
-WORKDIR /app/services/user-service
-
+# Install all dependencies (including dev, for tsc)
 RUN npm install
-RUN npm run build
+
+# Copy shared sources and build it
+COPY packages/shared/src ./packages/shared/src
+RUN npm run build --workspace=@shared/utils
+
+# Copy service sources and build it
+COPY services/user-service/src ./services/user-service/src
+RUN npm run build --workspace=user-service
 
 # Production stage
 FROM node:18-alpine
@@ -32,20 +31,15 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig.json ./
 COPY packages/shared/package.json ./packages/shared/
-
-RUN npm install --production --workspace=packages/shared
-
-COPY packages/shared ./packages/shared
-
 COPY services/user-service/package*.json ./services/user-service/
-COPY services/user-service/tsconfig.json ./services/user-service/
 
-WORKDIR /app/services/user-service
-
-RUN npm install --production
+RUN npm install --omit=dev --workspace=@shared/utils --workspace=user-service
 
 # Copy built files from builder
-COPY --from=builder /app/services/user-service/dist ./dist
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/services/user-service/dist ./services/user-service/dist
+
+WORKDIR /app/services/user-service
 
 # Create logs directory
 RUN mkdir -p /app/services/user-service/logs && chown -R node:node /app/services/user-service/logs

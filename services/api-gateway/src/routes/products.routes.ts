@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import axios from 'axios';
 import { createProductSchema, updateProductSchema } from '@shared/utils';
 import { createLogger } from '@shared/utils';
-import { adminMiddleware } from '../middleware/auth';
+import { adminMiddleware, authMiddleware } from '../middleware/auth';
 import { AuthRequest } from '../middleware/auth';
 
 const logger = createLogger('api-gateway:products');
@@ -62,7 +62,7 @@ productsRouter.get('/:id', async (req: Request, res: Response) => {
 });
 
 // Create product (admin only)
-productsRouter.post('/', adminMiddleware, async (req: AuthRequest, res: Response) => {
+productsRouter.post('/', authMiddleware, adminMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const validatedData = createProductSchema.parse(req.body);
 
@@ -87,7 +87,7 @@ productsRouter.post('/', adminMiddleware, async (req: AuthRequest, res: Response
 });
 
 // Update product (admin only)
-productsRouter.put('/:id', adminMiddleware, async (req: AuthRequest, res: Response) => {
+productsRouter.put('/:id', authMiddleware, adminMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const validatedData = updateProductSchema.parse(req.body);
@@ -113,7 +113,7 @@ productsRouter.put('/:id', adminMiddleware, async (req: AuthRequest, res: Respon
 });
 
 // Delete product (admin only)
-productsRouter.delete('/:id', adminMiddleware, async (req: AuthRequest, res: Response) => {
+productsRouter.delete('/:id', authMiddleware, adminMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
 
